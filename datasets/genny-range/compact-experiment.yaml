@@ -1,0 +1,94 @@
+workload_name: compact_experiment
+patches:
+  668c0875ffa00e0008549062: 
+    perf-1-node-replSet-fle.arm.aws.2023-11:
+    - "qe_range_testing_workloads_evergreen_compact1_baseline_large"
+    - "qe_range_testing_workloads_evergreen_compact1_baseline_small"
+    - "qe_range_testing_workloads_evergreen_compact1_cleanup_large"
+    - "qe_range_testing_workloads_evergreen_compact1_cleanup_small"
+    - "qe_range_testing_workloads_evergreen_compact1_compact_large"
+    - "qe_range_testing_workloads_evergreen_compact1_compact_small"
+    - "qe_range_testing_workloads_evergreen_compact2_cleanup_contiguous_freq_one"
+    - "qe_range_testing_workloads_evergreen_compact2_cleanup_small_support"
+    - "qe_range_testing_workloads_evergreen_compact2_compact_contiguous_freq_one"
+    - "qe_range_testing_workloads_evergreen_compact2_compact_small_support"
+    perf-shard-lite-fle.arm.aws.2023-11:
+    - "qe_range_testing_workloads_evergreen_compact1_baseline_large"
+    - "qe_range_testing_workloads_evergreen_compact1_baseline_small"
+    - "qe_range_testing_workloads_evergreen_compact1_cleanup_large"
+    - "qe_range_testing_workloads_evergreen_compact1_cleanup_small"
+    - "qe_range_testing_workloads_evergreen_compact1_compact_large"
+    - "qe_range_testing_workloads_evergreen_compact1_compact_small"
+    - "qe_range_testing_workloads_evergreen_compact2_cleanup_contiguous_freq_one"
+    - "qe_range_testing_workloads_evergreen_compact2_cleanup_small_support"
+    - "qe_range_testing_workloads_evergreen_compact2_compact_contiguous_freq_one"
+    - "qe_range_testing_workloads_evergreen_compact2_compact_small_support"
+genny_metrics:
+  tests: 
+  - CompactCleanupActor.compact
+  - CompactCleanupActor.cleanup
+  - BeforeCompact_QueryActor_Thread0.query.query
+  - BeforeCompact_QueryActor_Thread1.query.query
+  - BeforeCompact_QueryActor_Thread2.query.query
+  - BeforeCompact_QueryActor_Thread3.query.query
+  - BeforeCompact_QueryActor_Thread4.query.query
+  - BeforeCompact_QueryActor_Thread5.query.query
+  - BeforeCompact_QueryActor_Thread6.query.query
+  - BeforeCompact_QueryActor_Thread7.query.query
+  - BeforeCompact_QueryActor_Thread8.query.query
+  - BeforeCompact_QueryActor_Thread9.query.query
+  - BeforeCompact_QueryActor_Thread10.query.query
+  - BeforeCompact_QueryActor_Thread11.query.query
+  - BeforeCompact_QueryActor_Thread12.query.query
+  - BeforeCompact_QueryActor_Thread13.query.query
+  - BeforeCompact_QueryActor_Thread14.query.query
+  - BeforeCompact_QueryActor_Thread15.query.query
+  - AfterCompact_QueryActor_Thread0.query.query
+  - AfterCompact_QueryActor_Thread1.query.query
+  - AfterCompact_QueryActor_Thread2.query.query
+  - AfterCompact_QueryActor_Thread3.query.query
+  - AfterCompact_QueryActor_Thread4.query.query
+  - AfterCompact_QueryActor_Thread5.query.query
+  - AfterCompact_QueryActor_Thread6.query.query
+  - AfterCompact_QueryActor_Thread7.query.query
+  - AfterCompact_QueryActor_Thread8.query.query
+  - AfterCompact_QueryActor_Thread9.query.query
+  - AfterCompact_QueryActor_Thread10.query.query
+  - AfterCompact_QueryActor_Thread11.query.query
+  - AfterCompact_QueryActor_Thread12.query.query
+  - AfterCompact_QueryActor_Thread13.query.query
+  - AfterCompact_QueryActor_Thread14.query.query
+  - AfterCompact_QueryActor_Thread15.query.query
+  metrics:
+  - "OperationsTotal"
+  - "DocumentsTotal"
+  - "SizeTotal"
+  - "DurationTotal"
+  - "OverheadTotal"
+  - "ErrorsTotal"
+  - "AverageLatency"
+  - "AverageSize"
+  - "OperationThroughput"
+  - "DocumentThroughput"
+  - "SizeThroughput"
+  - "LatencyMin"
+  - "LatencyMax"
+  - "Latency50thPercentile"
+  - "Latency80thPercentile"
+  - "Latency90thPercentile"
+  - "Latency95thPercentile"
+  - "Latency99thPercentile"
+  - "WorkersMin"
+  - "WorkersMax"
+  - "ErrorRate"
+storage_metrics:
+  tests:
+    - "qe_range_testing_workloads_evergreen_compact1_baseline_large Storage Metrics"
+    - "qe_range_testing_workloads_evergreen_compact1_baseline_small Storage Metrics"
+    - "qe_range_testing_workloads_evergreen_compact1_cleanup_large Storage Metrics"
+    - "qe_range_testing_workloads_evergreen_compact1_cleanup_small Storage Metrics"
+    - "qe_range_testing_workloads_evergreen_compact1_compact_large Storage Metrics"
+    - "qe_range_testing_workloads_evergreen_compact1_compact_small Storage Metrics"
+  metrics:
+  - "End size of /data/dbs/ (bytes)"
+curator: "/home/ubuntu/genny/build/curator/curator"
