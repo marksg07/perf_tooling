@@ -1,10 +1,11 @@
 import yaml
 
+import multiprocessing as mp
 from evergreen.api import EvergreenApi
 from evergreen.config import get_auth
 
-from csv import DEFAULT_METRICS, DEFAULT_STORAGE_METRICS
-from csv import get_summary_stats_as_csv, get_storage_stats_as_csv
+from my_csv import DEFAULT_METRICS, DEFAULT_STORAGE_METRICS
+from my_csv import get_summary_stats_as_csv, get_storage_stats_as_csv
 
 class TestAndMetrics:
     def __init__(self, cfg_node, yaml_name, default_metrics, csv_func):
@@ -29,6 +30,18 @@ class TestAndMetrics:
     def get_stats_as_csv(self, json_obj, headers, csv_dict):
         self.csv_func(json_obj, self.tests, headers, csv_dict)
 
+
+def worker_init(*args, **kwargs):
+    global GLOBAL_SHARED_DATA
+    GLOBAL_SHARED_DATA = dict(args)
+    print(f"Worker initialized with: {GLOBAL_SHARED_DATA}")
+
+def task_function(task):
+    # Access the shared data within the task
+    print('I am running!!!')
+    for x in range(task.execution + 1):
+        execution = task.get_execution(x)
+        GLOBAL_SHARED_DATA['callback'](GLOBAL_SHARED_DATA['workload'], execution)
 class Patch:
     def __init__(self, workload_name, patch_id, patch_cfg, api):
         self.patch_id = patch_id
@@ -57,6 +70,11 @@ class Patch:
             for x in range(task.execution + 1):
                 execution = task.get_execution(x)
                 callback(workload, execution)
+
+    def parallel_iterate_executions(self, workload, callback):
+        shared_ctx = {'workload': workload, 'callback': callback}
+        with mp.Pool(16, initializer=worker_init, initargs=shared_ctx.items()) as p:
+            p.map(task_function, self.task_executions)
 
     def iterate_tasks(self, workload, callback):
         for task in self.task_executions:
@@ -102,6 +120,10 @@ class WorkloadConfig:
     def iterate_executions(self, callback):
         for p in self.patches:
             p.iterate_executions(self, callback)
+
+    def parallel_iterate_executions(self, callback):
+        for p in self.patches:
+            p.parallel_iterate_executions(self, callback)
 
     def iterate_tasks(self, callback):
         for p in self.patches:

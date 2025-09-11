@@ -1,5 +1,6 @@
 import sys
 
+import pickle
 from workload import WorkloadConfig
 from genny_postprocess import print_genny_stats_csv, print_storage_stats_csv, print_timing_stats_csv
 from genny_postprocess import fetch_ftdc_files, convert_ftdc_files
@@ -8,6 +9,7 @@ from ycsb_postprocess import SUMMARY_STATS_HEADERS, WC_STATS_HEADERS
 from ycsb_postprocess import download_and_extract_dsi_artifact
 from ycsb_postprocess import update_ycsb_summary_stats_csv, force_update_ycsb_summary_stats_csv, print_ycsb_summary_stats_csv
 from ycsb_postprocess import update_ycsb_wc_stats_csv, force_update_ycsb_wc_stats_csv, print_ycsb_wc_stats_csv
+from locust_postprocess import print_ts_locust_stats_csv, print_ts_storage_stats_csv, download_and_extract_ts_dsi_artifacts
 
 def usage():
     print(f"Usage: cli.py <COMMAND> <CONFIG_YML>\n")
@@ -47,7 +49,14 @@ if __name__ == "__main__":
 
     cmd = sys.argv[1]
     cfg = sys.argv[2]
-    wld = WorkloadConfig(cfg)
+    if cfg.endswith('.pkl'):
+        with open(cfg, 'rb') as f:
+            wld = pickle.load(f)
+    else:
+        wld = WorkloadConfig(cfg)
+        import pickle
+        with open(cfg + '.pkl', 'wb') as f:
+            pickle.dump(wld, f)
 
     if cmd == "genny_stats":
         print_genny_stats_csv(wld)
@@ -63,6 +72,12 @@ if __name__ == "__main__":
         convert_ftdc_files(wld, "csv")
     elif cmd == "fetch_artifacts":
         wld.iterate_executions(download_and_extract_dsi_artifact)
+    elif cmd == 'fetch_ts_artifacts':
+        wld.parallel_iterate_executions(download_and_extract_ts_dsi_artifacts)
+    elif cmd == 'ts_storage_stats':
+        print_ts_storage_stats_csv(wld)
+    elif cmd == 'ts_locust_stats':
+        print_ts_locust_stats_csv(wld)
     elif cmd == "update_ycsb_summary_stats":
         wld.iterate_executions(update_ycsb_summary_stats_csv)
     elif cmd == "update_all_ycsb_summary_stats":

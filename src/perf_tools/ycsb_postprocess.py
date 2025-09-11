@@ -5,7 +5,7 @@ import subprocess
 from contextlib import redirect_stdout
 from pathlib import Path
 
-from csv import print_csv
+from my_csv import print_csv
 
 YCSB_SUMMARY_STATS_CSV_FILENAME="perf_data.csv"
 YCSB_WC_STATS_CSV_FILENAME="wc_data.csv"

@@ -6,7 +6,7 @@ import subprocess
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 
-from csv import print_csv
+from my_csv import print_csv
 
 def get_output_dir(workload, task_execution):
     return os.path.join(workload.workload_name, task_execution.version_id, task_execution.build_variant,
@@ -68,9 +68,11 @@ def _print_stats_csv(workload, task, metrics_obj):
     csv_dict = {key: [] for key in headers}
     tid = task.task_id
     try:
+        print(f'loading "https://cedar.mongodb.com/rest/v1/perf/task_id/{tid}"')
         rsp = requests.get(f"https://cedar.mongodb.com/rest/v1/perf/task_id/{tid}")
         rsp.raise_for_status()
     except:
+        print('fail')
         return
     metrics_obj.get_stats_as_csv(rsp.json(), headers, csv_dict)
     print_csv(csv_dict, headers)
