@@ -17,6 +17,7 @@ YCSB_WC_STATS_CSV_FILENAME="wc_data.csv"
 YCSB_DIRS=["ycsb_load", "ycsb_100read", "ycsb_50read50update", "ycsb_100update", "ycsb_95read5update"]
 LOCUST_HEADERS=['Type', 'Name', 'Request Count', 'Failure Count', 'Median Response Time', 'Average Response Time', 'Min Response Time', 'Max Response Time', 'Average Content Size', 'Requests/s', 'Failures/s', '50%', '66%', '75%', '80%', '90%', '95%', '98%', '99%', '99.9%', '99.99%', '100%']
 STORAGE_HEADERS=['Name', 'Total Objects', 'Uncompressed Data Size', 'Compressed Data Size', 'Index Size', 'Total Compressed Size']
+LOCUST_HISTORY_HEADERS=['Timestamp', 'User Count', 'Type', 'Name', 'Requests/s', 'Failures/s', '50%', '66%', '75%', '80%', '90%', '95%', '98%', '99%', '99.9%', '99.99%', '100%', 'Total Request Count', 'Total Failure Count', 'Total Median Response Time', 'Total Average Response Time', 'Total Min Response Time', 'Total Max Response Time', 'Total Average Content Size']
 
 def get_output_dir(workload, task_execution):
     return os.path.join(workload.workload_name, task_execution.version_id, task_execution.build_variant,
@@ -118,6 +119,19 @@ def print_ts_locust_stats_csv(workload):
                 print(','.join([task.display_name, str(task.execution)] + row))
 
     print(",".join(['Task Name', 'Execution'] + LOCUST_HEADERS))
+    workload.iterate_tasks(cb)
+
+def print_ts_locust_history_stats_csv(workload):
+    def cb(workload, task):
+        dir = get_output_dir(workload, task)
+        file = os.path.join(dir, 'locust_output_stats_history.csv')
+        with open(file, 'r', newline='') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            header = next(csv_reader)
+            for row in csv_reader:
+                print(','.join([task.display_name, str(task.execution)] + row))
+
+    print(",".join(['Task Name', 'Execution'] + LOCUST_HISTORY_HEADERS))
     workload.iterate_tasks(cb)
 
 def print_ts_storage_stats_csv(workload):
