@@ -1,3 +1,4 @@
+import re
 import tarfile
 
 import os
@@ -8,7 +9,8 @@ import json
 from contextlib import redirect_stdout
 from pathlib import Path
 
-from my_csv import print_csv
+from genny_postprocess import ftdc_to_json
+
 
 YCSB_SUMMARY_STATS_CSV_FILENAME="perf_data.csv"
 YCSB_WC_STATS_CSV_FILENAME="wc_data.csv"
@@ -26,6 +28,26 @@ def setup_output_dir(workload, task_execution):
     return path
 
 def download_and_extract_ts_dsi_artifacts(workload, task_execution):
+    locust_file_base_regex = r'\.\/build\/WorkloadOutput\/reports-.*\/.*\/'
+    stats_subregex = r'locust_output_.*stats.*\.csv'
+    ftdc_subregex = r'mongod\.0\/diagnostic\.data\/metrics\.20.*'
+    interesting_pattern = re.compile(f'^{locust_file_base_regex}(({stats_subregex})|({ftdc_subregex}))$')
+
+    def _is_interesting_locust_file(path):
+        return re.fullmatch(interesting_pattern, path)
+    
+    def _output_path(path):
+        bn = os.path.basename(path)
+        if 'locust_output_' in bn:
+            return bn
+        elif 'metrics.' in bn:
+            _output_path.metric_n += 1
+            if _output_path.metric_n > 1:
+                raise Exception('Did not expect multiple metrics files')
+            return 'metrics' 
+        
+    _output_path.metric_n = 0
+
     dirpath = get_output_dir(workload, task_execution)
 
     if task_execution.status != "success":
@@ -48,18 +70,22 @@ def download_and_extract_ts_dsi_artifacts(workload, task_execution):
                 if os.path.exists(tgz_path):
                     os.remove(tgz_path)
                 raise
-        if os.path.exists(os.path.join(dirpath, 'locust_output_stats.csv')):
+        if os.path.exists(os.path.join(dirpath, 'metrics.json')):
             print('Already extracted')
         else:
             print(f'Extracting files from {tgz_path}')
             with tarfile.open(tgz_path, 'r:gz') as tarf:
-                good_files = list(filter(lambda c: 'locust_output_stats.csv' in c or 'locust_output_db_stats.csv' in c, tarf.getnames()))
-                assert len(good_files) == 2
+                good_files = list(filter(_is_interesting_locust_file, tarf.getnames()))
 
                 for fi in good_files:
                     contents = tarf.extractfile(fi).read()
-                    with open(os.path.join(dirpath, os.path.basename(fi)), 'wb') as f:
+                    with open(os.path.join(dirpath, _output_path(fi)), 'wb') as f:
                         f.write(contents)
+            
+            # Unpack metrics as json
+            metrics_path = os.path.join(dirpath, 'metrics')
+            assert(os.path.exists(metrics_path))
+            ftdc_to_json(workload, metrics_path)
         return
 
 def extract_good_from_artifacts(workload, task_execution):
@@ -105,4 +131,12 @@ def print_ts_storage_stats_csv(workload):
                 print(','.join([task.display_name, str(task.execution)] + row))
 
     print(",".join(['Task Name', 'Execution'] + STORAGE_HEADERS))
+    workload.iterate_tasks(cb)
+
+def print_ts_basepaths_csv(workload):
+    def cb(workload, task):
+        dir = get_output_dir(workload, task)
+        print(','.join([task.display_name, str(task.execution), dir]))
+
+    print(",".join(['Task Name', 'Execution', 'Output Path']))
     workload.iterate_tasks(cb)

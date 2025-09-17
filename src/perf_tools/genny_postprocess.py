@@ -91,7 +91,7 @@ def print_timing_stats_csv(workload):
     print(",".join(workload.timing_metrics.get_all_headers()))
     workload.iterate_tasks(lambda wld, tsk : _print_stats_csv(wld, tsk, wld.timing_metrics))
 
-def _ftdc_to_json(workload, ftdc_path):
+def ftdc_to_json(workload, ftdc_path):
     json_path = ftdc_path + ".json"
     if os.path.exists(json_path):
         print(f"Skipping conversion of {ftdc_path} as {json_path} already exists")
@@ -104,7 +104,7 @@ def _ftdc_to_json(workload, ftdc_path):
     fstream.close()
     return json_path
 
-def _ftdc_to_csv(workload, ftdc_path):
+def ftdc_to_csv(workload, ftdc_path):
     csv_path = ftdc_path + ".csv"
     if os.path.exists(csv_path):
         print(f"Skipping conversion of {ftdc_path} as {csv_path} already exists")
@@ -125,7 +125,7 @@ def convert_ftdc_files(workload, format):
     print(f"curator is {workload.curator_binpath}")
 
     pool = ThreadPool(None)
-    func = _ftdc_to_csv if format == "csv" else _ftdc_to_json
+    func = ftdc_to_csv if format == "csv" else ftdc_to_json
     try:
         for patch in workload.patches:
             for task in patch.task_executions:
